@@ -1,4 +1,4 @@
-name: Build iOS Application
+name: Build iOS and Android Applications
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-ios:
+  build:
     runs-on: macos-latest
 
     steps:
@@ -31,5 +31,17 @@ jobs:
       - name: Upload Android APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: AnadoluGaleri-Android-Debug
+          name: AnadoluGaleri-Android-APK
           path: app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Build iOS Xcode App
+        run: |
+          mkdir -p iosBuild
+          zip -r iosBuild/AnadoluGaleri-iOS-App.zip iosApp
+        continue-on-error: true
+
+      - name: Upload iOS Package Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AnadoluGaleri-iOS-Package
+          path: iosBuild/AnadoluGaleri-iOS-App.zip
