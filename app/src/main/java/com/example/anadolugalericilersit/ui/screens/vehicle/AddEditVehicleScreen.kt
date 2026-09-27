@@ -1,0 +1,431 @@
+package com.example.anadolugalericilersit.ui.screens.vehicle
+
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddAPhoto
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.VideoLibrary
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import com.example.anadolugalericilersit.data.model.DamgaStatus
+import com.example.anadolugalericilersit.data.model.Dealer
+import com.example.anadolugalericilersit.data.model.Vehicle
+import com.example.anadolugalericilersit.data.model.VehicleStatus
+import com.example.anadolugalericilersit.data.repository.VehicleRepository
+import com.example.anadolugalericilersit.ui.components.LoadingDialog
+import com.example.anadolugalericilersit.ui.viewmodel.VehicleViewModel
+import com.example.anadolugalericilersit.utils.Constants
+import com.example.anadolugalericilersit.utils.Resource
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddEditVehicleScreen(
+    vehicleIdToEdit: String?,
+    vehicleViewModel: VehicleViewModel,
+    dealer: Dealer?,
+    onBackClick: () -> Unit,
+    onSaveSuccess: () -> Unit
+) {
+    val context = LocalContext.current
+    val saveState by vehicleViewModel.saveState.collectAsState()
+    val uploadProgress by vehicleViewModel.uploadProgress.collectAsState()
+
+    var brand by remember { mutableStateOf("") }
+    var model by remember { mutableStateOf("") }
+    var licensePlate by remember { mutableStateOf("") }
+    var year by remember { mutableStateOf("2022") }
+    var km by remember { mutableStateOf("") }
+    var fuelType by remember { mutableStateOf("Benzin") }
+    var transmission by remember { mutableStateOf("Otomatik") }
+    var bodyType by remember { mutableStateOf("Sedan") }
+    var engineSize by remember { mutableStateOf("1.6") }
+    var enginePower by remember { mutableStateOf("170 HP") }
+    var drivetrain by remember { mutableStateOf("Arkadan İtiş") }
+    var color by remember { mutableStateOf("Beyaz") }
+    var price by remember { mutableStateOf("") }
+    var negotiable by remember { mutableStateOf(false) }
+    var suitableForCredit by remember { mutableStateOf(true) }
+    var expertInspectionCost by remember { mutableStateOf("0") }
+    var requestDamga by remember { mutableStateOf(false) }
+    var description by remember { mutableStateOf("") }
+
+    val selectedFeatures = remember { mutableStateListOf<String>() }
+    val newImageUris = remember { mutableStateListOf<Uri>() }
+    var selectedVideoUri by remember { mutableStateOf<Uri?>(null) }
+
+    var isBrandExpanded by remember { mutableStateOf(false) }
+
+    LaunchedEffect(vehicleIdToEdit) {
+        if (!vehicleIdToEdit.isNullOrBlank()) {
+            val res = VehicleRepository().getVehicleById(vehicleIdToEdit)
+            if (res is Resource.Success && res.data != null) {
+                val v = res.data
+                brand = v.brand
+                model = v.model
+                licensePlate = v.licensePlate
+                year = v.year.toString()
+                km = v.km.toString()
+                fuelType = v.fuelType
+                transmission = v.transmission
+                bodyType = v.bodyType
+                engineSize = v.engineSize
+                enginePower = v.enginePower
+                drivetrain = v.drivetrain
+                color = v.color
+                price = v.price.toString()
+                negotiable = v.negotiable
+                suitableForCredit = v.suitableForCredit
+                expertInspectionCost = v.expertInspectionCost.toString()
+                requestDamga = v.damgaStatus == DamgaStatus.PENDING || v.damgaStatus == DamgaStatus.APPROVED || v.hasDamga
+                description = v.description
+                selectedFeatures.clear()
+                selectedFeatures.addAll(v.features)
+            }
+        }
+    }
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetMultipleContents()
+    ) { uris ->
+        newImageUris.addAll(uris)
+    }
+
+    val videoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        selectedVideoUri = uri
+    }
+
+    LaunchedEffect(saveState) {
+        if (saveState is Resource.Success) {
+            Toast.makeText(context, "İlan kaydedildi!", Toast.LENGTH_SHORT).show()
+            vehicleViewModel.clearSaveState()
+            onSaveSuccess()
+        }
+    }
+
+    if (uploadProgress != null) {
+        LoadingDialog(
+            message = uploadProgress?.second ?: "Fotoğraflar yükleniyor...",
+            progress = uploadProgress?.first
+        )
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(if (vehicleIdToEdit == null) "Yeni İlan Ekle" else "İlanı Düzenle") },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Geri")
+                    }
+                }
+            )
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp)
+        ) {
+            Text(text = "Araç Fotoğrafları ve Video", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Image Picker & List
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                item {
+                    Card(
+                        modifier = Modifier
+                            .size(90.dp)
+                            .clickable { imagePickerLauncher.launch("image/*") },
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+                    ) {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Icon(Icons.Default.AddAPhoto, contentDescription = null)
+                            Text("Fotoğraf Ekle", fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                        }
+                    }
+                }
+
+                items(newImageUris) { uri ->
+                    Box(modifier = Modifier.size(90.dp)) {
+                        AsyncImage(
+                            model = uri,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(8.dp))
+                        )
+                        IconButton(
+                            onClick = { newImageUris.remove(uri) },
+                            modifier = Modifier.align(Alignment.TopEnd).size(24.dp).background(Color.Black.copy(alpha = 0.6f))
+                        ) {
+                            Icon(Icons.Default.Close, contentDescription = "Sil", tint = Color.White, modifier = Modifier.size(16.dp))
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Video Picker
+            OutlinedButton(
+                onClick = { videoPickerLauncher.launch("video/*") },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Default.VideoLibrary, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(if (selectedVideoUri == null) "Araç Videosu Seç (Opsiyonel)" else "Video Seçildi ✓")
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Text(text = "Temel Bilgiler", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Brand Dropdown
+            ExposedDropdownMenuBox(
+                expanded = isBrandExpanded,
+                onExpandedChange = { isBrandExpanded = !isBrandExpanded },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                OutlinedTextField(
+                    value = brand,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Marka *") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isBrandExpanded) },
+                    modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true)
+                )
+                ExposedDropdownMenu(
+                    expanded = isBrandExpanded,
+                    onDismissRequest = { isBrandExpanded = false }
+                ) {
+                    Constants.BRANDS_WITH_MODELS.keys.forEach { b ->
+                        DropdownMenuItem(
+                            text = { Text(b) },
+                            onClick = {
+                                brand = b
+                                isBrandExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            OutlinedTextField(
+                value = model,
+                onValueChange = { model = it },
+                label = { Text("Model *") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            OutlinedTextField(
+                value = licensePlate,
+                onValueChange = { licensePlate = it.uppercase() },
+                label = { Text("Araç Plakası (Plaka) *") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = year,
+                    onValueChange = { year = it },
+                    label = { Text("Yıl") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.weight(1f)
+                )
+                OutlinedTextField(
+                    value = km,
+                    onValueChange = { km = it },
+                    label = { Text("Kilometre") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            OutlinedTextField(
+                value = price,
+                onValueChange = { price = it },
+                label = { Text("Fiyat (TL) *") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(checked = negotiable, onCheckedChange = { negotiable = it })
+                Text("Pazarlık Var")
+                Spacer(modifier = Modifier.width(16.dp))
+                Checkbox(checked = suitableForCredit, onCheckedChange = { suitableForCredit = it })
+                Text("Krediye Uygun")
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            OutlinedTextField(
+                value = expertInspectionCost,
+                onValueChange = { expertInspectionCost = it },
+                label = { Text("Ekspertiz Ücreti (TL)") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            val expCost = expertInspectionCost.toDoubleOrNull() ?: 0.0
+            if (expCost >= 5000.0) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = requestDamga,
+                            onCheckedChange = { requestDamga = it }
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column {
+                            Text("Damga Talebi Oluştur (5000 TL+ Ekspertiz)", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                            Text("Yönetici onayı ve IBAN doğrulaması ile damga rozeti kazanın.", fontSize = 11.sp)
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(text = "Donanım Özellikleri", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Multi-select features
+            Constants.EQUIPMENT_OPTIONS.chunked(2).forEach { row ->
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    row.forEach { feat ->
+                        val isSelected = selectedFeatures.contains(feat)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable {
+                                    if (isSelected) selectedFeatures.remove(feat) else selectedFeatures.add(feat)
+                                }
+                        ) {
+                            Checkbox(
+                                checked = isSelected,
+                                onCheckedChange = { if (it) selectedFeatures.add(feat) else selectedFeatures.remove(feat) }
+                            )
+                            Text(text = feat, fontSize = 12.sp)
+                        }
+                    }
+                    if (row.size == 1) Spacer(modifier = Modifier.weight(1f))
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = description,
+                onValueChange = { description = it },
+                label = { Text("Açıklama") },
+                maxLines = 5,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            if (saveState is Resource.Error) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = saveState.message ?: "İlan kaydedilemedi",
+                    color = MaterialTheme.colorScheme.error,
+                    fontSize = 13.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Button(
+                onClick = {
+                    if (dealer == null) return@Button
+                    val v = Vehicle(
+                        dealerId = dealer.id,
+                        dealerName = dealer.galleryName,
+                        dealerPhone = dealer.phone,
+                        dealerCity = dealer.city,
+                        dealerDistrict = dealer.district,
+                        dealerLogoUrl = dealer.logoUrl,
+                        brand = brand,
+                        model = model,
+                        licensePlate = licensePlate,
+                        year = year.toIntOrNull() ?: 2022,
+                        km = km.toIntOrNull() ?: 0,
+                        fuelType = fuelType,
+                        transmission = transmission,
+                        bodyType = bodyType,
+                        engineSize = engineSize,
+                        enginePower = enginePower,
+                        drivetrain = drivetrain,
+                        color = color,
+                        price = price.toDoubleOrNull() ?: 0.0,
+                        negotiable = negotiable,
+                        suitableForCredit = suitableForCredit,
+                        expertInspectionCost = expCost,
+                        damgaStatus = if (expCost >= 5000.0 && requestDamga) DamgaStatus.PENDING else DamgaStatus.NONE,
+                        description = description,
+                        features = selectedFeatures.toList(),
+                        status = VehicleStatus.PUBLISHED
+                    )
+
+                    vehicleViewModel.saveVehicle(
+                        context = context,
+                        vehicle = v,
+                        newImageUris = newImageUris,
+                        videoUri = selectedVideoUri
+                    )
+                },
+                modifier = Modifier.fillMaxWidth().height(50.dp)
+            ) {
+                Text("İlanı Yayınla", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            }
+        }
+    }
+}
