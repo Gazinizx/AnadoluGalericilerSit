@@ -99,7 +99,7 @@ object QRCodeUtils {
         }
 
         val message = """
-            Anadolu Galericiler Sitesi - 10 Damga Ödül Başvurusu
+            Anadolu Galericiler Sitesi - 6 Damga Ödül Başvurusu
             
             Galeri Adı: ${dealer.galleryName}
             Yetkili Adı Soyadı: ${dealer.authorizedName}
@@ -107,6 +107,7 @@ object QRCodeUtils {
             IBAN Numarası: ${dealer.iban}
             IBAN Sahibi Adı Soyadı: ${dealer.ibanOwnerName.takeIf { it.isNotBlank() } ?: "Belirtilmemiş"}
         """.trimIndent()
+
 
         IntentUtils.openWhatsApp(context, "05054543099", message)
     }

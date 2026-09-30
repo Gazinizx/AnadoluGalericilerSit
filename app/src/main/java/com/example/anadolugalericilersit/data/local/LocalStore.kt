@@ -42,17 +42,19 @@ object LocalStore {
     var currentLoggedInUid: String? = null
 
     val users = mutableMapOf<String, User>(
-        "admin_mevlut" to User(
-            uid = "admin_mevlut",
-            email = "05054543099",
-            name = "Mevlüt Admin",
+        "admin_europexpert" to User(
+            uid = "admin_europexpert",
+            email = "europexpert38@gmail.com",
+            password = "369369",
+            name = "EuropExpert Admin",
             role = Role.SUPER_ADMIN,
             canIssueDamga = true
         ),
-        "admin_super_full" to User(
-            uid = "admin_super_full",
-            email = "yönetim@gmail.com",
-            name = "Süper Yetkili Yönetici",
+        "admin_gazitasdemir" to User(
+            uid = "admin_gazitasdemir",
+            email = "gazitasdemir46@gmail.com",
+            password = "369369",
+            name = "Gazi Taşdemir Admin",
             role = Role.SUPER_ADMIN,
             canIssueDamga = true
         )
@@ -69,3 +71,4 @@ object LocalStore {
     val stampCodes = mutableMapOf<String, StampCodeRequest>()
     val debtTransactions = mutableMapOf<String, MutableList<DebtTransaction>>() // dealerId -> transactions
 }
+

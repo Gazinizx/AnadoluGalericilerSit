@@ -285,22 +285,116 @@ fun DealerRegisterScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // KVKK Checkbox
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
+            // Registration & Preliminary Information Contract Checkbox
+            var showContractDialog by remember { mutableStateOf(false) }
+
+            Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { kvkkAccepted = !kvkkAccepted }
+                    .padding(vertical = 8.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (kvkkAccepted) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surfaceVariant
+                ),
+                shape = RoundedCornerShape(10.dp)
             ) {
-                Checkbox(
-                    checked = kvkkAccepted,
-                    onCheckedChange = { kvkkAccepted = it }
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "KVKK Aydınlatma Metni ve Kullanım Şartları'nı okudum, kabul ediyorum.",
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurface
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { kvkkAccepted = !kvkkAccepted }
+                    ) {
+                        Checkbox(
+                            checked = kvkkAccepted,
+                            onCheckedChange = { kvkkAccepted = it }
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Kayıt ve Üyelik Ön Bilgilendirme Sözleşmesi'ni okudum, kabul ediyorum. *",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+
+                    TextButton(
+                        onClick = { showContractDialog = true },
+                        modifier = Modifier.align(Alignment.End)
+                    ) {
+                        Text(
+                            text = "📄 Sözleşme Metnini Oku",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            }
+
+            // Contract Dialog
+            if (showContractDialog) {
+                AlertDialog(
+                    onDismissRequest = { showContractDialog = false },
+                    title = {
+                        Text(
+                            text = "Kayıt ve Üyelik Ön Bilgilendirme Sözleşmesi",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                    },
+                    text = {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(max = 350.dp)
+                                .verticalScroll(rememberScrollState())
+                        ) {
+                            Text(
+                                text = """
+                                ANADOLU OTOMOTİV GALERİCİLER SİTESİ
+                                GALERİCİ ÜYELİK VE ÖN BİLGİLENDİRME SÖZLEŞMESİ
+
+                                1. TARAFLAR VE AMAÇ:
+                                İşbu sözleşme Anadolu Otomotiv Galericiler Sitesi dijital platformu ile platforma kaydolan yetkili oto galeri işletmesi (ÜYE GALERİ) arasında akdedilmiştir.
+
+                                2. ÜYELİK VE İLAN ŞARTLARI:
+                                - Üye galeri, beyan ettiği vergi numarası, yetkili adı, telefon ve IBAN bilgilerinin eksiksiz ve doğru olduğunu kabul ve taahhüt eder.
+                                - Sistemde yayınlanan araç ilanlarının, ekspertiz bilgilerinin, kilometre ve araç durumunun hukuki, mali ve cezai tüm sorumluluğu doğrudan ilanı oluşturan üyeye aittir.
+                                - Üyelik başvurusu Admin (Yönetici) onayından geçtikten sonra aktifleşir.
+
+                                3. HUKUKİ VE MADDİ SORUMLULUK REDDİ (YASAL MUAFİYET MADDESİ):
+                                - Anadolu Otomotiv Galericiler Sitesi platformu, platform geliştiricileri, sistem yöneticileri ve hak sahipleri (Gazi Taşdemir, Dennis İçtem ve platform yetkilileri), alıcılar, satıcılar, galericiler veya üçüncü şahıslar arasında gerçekleşecek hiçbir ticari uyuşmazlığın, alım-satım işleminin, ekspertiz beyanının, ayıplı mal iddiasının veya hukuki/cezai davanın TARAFI VEYA MUHATABI DEĞİLDİR.
+                                - Platform yalnızca yer sağlayıcı ilan hizmeti sunmaktadır. Olası her türlü adli, idari, icrai veya hukuki süreçte platform sahipleri hiçbir şekilde sorumlu tutulamaz, davaya dahil edilemez ve taraf gösterilemez. Tüm hukuki, idari ve mali sorumluluk münhasıran ilanı veren galericiye ve alıcıya aittir.
+
+                                4. 6 DAMGA VE MÜKÂFAT SİSTEMİ:
+                                - Platform üzerindeki damgalama, puan, borç takip ve 6 damga ödül haklarında sistem yöneticisinin belirlediği kurallar geçerlidir.
+
+                                5. GİZLİLİK VE KVKK:
+                                - Kişisel verileriniz 6698 sayılı KVKK kapsamında sistem güvenliği ve üyelik doğrulama amacıyla işlenmektedir.
+
+                                İşbu sözleşmeyi onaylayarak yukarıdaki tüm şartları ve yasal sorumluluk reddi beyanını kayıtsız şartsız kabul etmiş sayılırsınız.
+                                """.trimIndent(),
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+
+                        }
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                kvkkAccepted = true
+                                showContractDialog = false
+                            }
+                        ) {
+                            Text("Okudum & Kabul Ediyorum")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showContractDialog = false }) {
+                            Text("Kapat")
+                        }
+                    }
                 )
             }
 
@@ -318,7 +412,7 @@ fun DealerRegisterScreen(
             Button(
                 onClick = {
                     if (!kvkkAccepted) {
-                        Toast.makeText(context, "Lütfen KVKK şartlarını kabul ediniz", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Lütfen Kayıt ve Ön Bilgilendirme Sözleşmesini okuyup onaylayınız!", Toast.LENGTH_LONG).show()
                         return@Button
                     }
                     authViewModel.registerDealer(
@@ -339,3 +433,4 @@ fun DealerRegisterScreen(
         }
     }
 }
+

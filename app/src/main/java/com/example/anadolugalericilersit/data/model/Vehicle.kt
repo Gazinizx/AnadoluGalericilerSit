@@ -50,7 +50,13 @@ data class Vehicle(
     val rejectionReason: String = "",
     val hasDamga: Boolean = false,
     val expertInspectionCost: Double = 0.0,
+    val expertReportStatus: String = "",
+    val expertReportDetails: String = "",
+    val expertReportImageUrl: String = "",
+    val bodyPartsCondition: Map<String, String> = emptyMap(),
     val damgaStatus: DamgaStatus = DamgaStatus.NONE,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 )
+
+

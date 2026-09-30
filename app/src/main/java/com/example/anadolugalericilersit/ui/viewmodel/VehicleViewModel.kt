@@ -80,7 +80,8 @@ class VehicleViewModel(
         context: Context,
         vehicle: Vehicle,
         newImageUris: List<Uri>,
-        videoUri: Uri?
+        videoUri: Uri?,
+        expertReportUri: Uri? = null
     ) {
         if (vehicle.brand.isBlank() || vehicle.model.isBlank() || vehicle.price <= 0) {
             _saveState.value = Resource.Error("Lütfen marka, model ve geçerli fiyat giriniz")
@@ -93,7 +94,8 @@ class VehicleViewModel(
                 context,
                 vehicle,
                 newImageUris,
-                videoUri
+                videoUri,
+                expertReportUri
             ) { percent, message ->
                 _uploadProgress.value = Pair(percent, message)
             }
@@ -101,6 +103,7 @@ class VehicleViewModel(
             _uploadProgress.value = null
         }
     }
+
 
     fun updateVehicleStatus(vehicleId: String, dealerId: String, newStatus: VehicleStatus) {
         viewModelScope.launch {

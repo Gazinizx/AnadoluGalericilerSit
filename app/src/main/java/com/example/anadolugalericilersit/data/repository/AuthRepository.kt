@@ -38,77 +38,60 @@ class AuthRepository {
                 return Resource.Error("E-posta/Telefon ve şifre boş bırakılamaz")
             }
 
-            // Check if input matches Admin 1 (Mevlüt Admin)
-            val isAdmin1Input = normalizedInput == "05054543099" ||
-                    normalizedInput == "5054543099" ||
-                    normalizedInput == "mevlutadmin"
+            // Check if input matches Admin 1 (EuropExpert Admin)
+            val isAdmin1Input = normalizedInput == "europexpert38@gmail.com" ||
+                    normalizedInput == "europexpert38"
 
             if (isAdmin1Input) {
-                val isValidPass = cleanPass == "Mevlüt321." ||
-                        cleanPass == "mevlut321." ||
-                        cleanPass == "mevlut321" ||
-                        cleanPass == "Mevlüt321"
-                if (!isValidPass) {
+                if (cleanPass != "369369") {
                     return Resource.Error("Girilen şifre hatalı!")
                 }
 
                 val adminUser = User(
-                    uid = "admin_mevlut",
-                    email = cleanEmail,
-                    password = cleanPass,
-                    name = "Mevlüt Admin",
+                    uid = "admin_europexpert",
+                    email = "europexpert38@gmail.com",
+                    password = "369369",
+                    name = "EuropExpert Admin",
                     role = Role.SUPER_ADMIN,
                     canIssueDamga = true
                 )
-                LocalStore.users["admin_mevlut"] = adminUser
+                LocalStore.users["admin_europexpert"] = adminUser
                 LocalStore.currentLoggedInUid = adminUser.uid
                 SessionManager.saveSession(adminUser.uid)
 
                 try {
                     firestore.collection("users").document(adminUser.uid).set(adminUser).await()
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     // ignore firestore sync errors offline
                 }
 
                 return Resource.Success(adminUser)
             }
 
-            // Check if input matches Admin 2 (Süper Yönetim)
-            val isAdmin2Input = normalizedInput == "yönetim@gmail.com" ||
-                    normalizedInput == "yonetim@gmail.com" ||
-                    normalizedInput == "yonetim" ||
-                    normalizedInput == "yönetim" ||
-                    normalizedInput == "5541027908" ||
-                    normalizedInput == "05541027908" ||
-                    normalizedInput == "5441027908" ||
-                    normalizedInput == "05441027908" ||
-                    normalizedInput == "admin@gmail.com" ||
-                    normalizedInput == "admin"
+            // Check if input matches Admin 2 (Gazi Taşdemir Admin)
+            val isAdmin2Input = normalizedInput == "gazitasdemir46@gmail.com" ||
+                    normalizedInput == "gazitasdemir46"
 
             if (isAdmin2Input) {
-                val isValidPass = cleanPass == "MD112233." ||
-                        cleanPass == "md112233." ||
-                        cleanPass == "300426" ||
-                        cleanPass == "123456"
-                if (!isValidPass) {
+                if (cleanPass != "369369") {
                     return Resource.Error("Girilen şifre hatalı!")
                 }
 
                 val adminUser = User(
-                    uid = "admin_super_full",
-                    email = cleanEmail,
-                    password = cleanPass,
-                    name = "Süper Yetkili Yönetici",
+                    uid = "admin_gazitasdemir",
+                    email = "gazitasdemir46@gmail.com",
+                    password = "369369",
+                    name = "Gazi Taşdemir Admin",
                     role = Role.SUPER_ADMIN,
                     canIssueDamga = true
                 )
-                LocalStore.users["admin_super_full"] = adminUser
+                LocalStore.users["admin_gazitasdemir"] = adminUser
                 LocalStore.currentLoggedInUid = adminUser.uid
                 SessionManager.saveSession(adminUser.uid)
 
                 try {
                     firestore.collection("users").document(adminUser.uid).set(adminUser).await()
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     // ignore firestore sync errors offline
                 }
 
@@ -155,11 +138,8 @@ class AuthRepository {
                             return Resource.Error("Girilen şifre hatalı!")
                         }
 
-                        if (user.email.contains("yonetim", ignoreCase = true) ||
-                            user.email.contains("yönetim", ignoreCase = true) ||
-                            user.email == "05054543099" ||
-                            user.email == "5441027908" ||
-                            user.email == "5541027908"
+                        if (user.email == "europexpert38@gmail.com" ||
+                            user.email == "gazitasdemir46@gmail.com"
                         ) {
                             user = user.copy(role = Role.SUPER_ADMIN, canIssueDamga = true)
                         }
@@ -183,7 +163,7 @@ class AuthRepository {
                         return Resource.Success(user)
                     }
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 // proceed if query fails
             }
 
@@ -246,7 +226,7 @@ class AuthRepository {
             try {
                 firestore.collection("dealers").document(uid).set(dealer).await()
                 firestore.collection("users").document(uid).set(user).await()
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 // ignore firestore sync errors if offline
             }
 
@@ -272,11 +252,8 @@ class AuthRepository {
         val localUser = LocalStore.users[safeUid]
         if (localUser != null) {
             LocalStore.currentLoggedInUid = safeUid
-            if (localUser.email == "05054543099" ||
-                localUser.email == "5441027908" ||
-                localUser.email == "5541027908" ||
-                localUser.email.contains("yonetim", ignoreCase = true) ||
-                localUser.email.contains("yönetim", ignoreCase = true) ||
+            if (localUser.email == "europexpert38@gmail.com" ||
+                localUser.email == "gazitasdemir46@gmail.com" ||
                 safeUid.startsWith("admin")
             ) {
                 val updated = localUser.copy(role = Role.SUPER_ADMIN, canIssueDamga = true)
@@ -287,11 +264,12 @@ class AuthRepository {
         }
 
         // Handle direct admin UIDs
-        if (safeUid == "admin_mevlut" || safeUid == "admin_super_full") {
+        if (safeUid == "admin_europexpert" || safeUid == "admin_gazitasdemir") {
+            val is1 = safeUid == "admin_europexpert"
             val adminUser = User(
                 uid = safeUid,
-                email = if (safeUid == "admin_mevlut") "05054543099" else "yönetim@gmail.com",
-                name = if (safeUid == "admin_mevlut") "Mevlüt Admin" else "Süper Yetkili Yönetici",
+                email = if (is1) "europexpert38@gmail.com" else "gazitasdemir46@gmail.com",
+                name = if (is1) "EuropExpert Admin" else "Gazi Taşdemir Admin",
                 role = Role.SUPER_ADMIN,
                 canIssueDamga = true
             )
@@ -306,11 +284,8 @@ class AuthRepository {
             if (doc.exists()) {
                 var user = doc.toObject(User::class.java)
                 if (user != null) {
-                    if (user.email.contains("yonetim", ignoreCase = true) ||
-                        user.email.contains("yönetim", ignoreCase = true) ||
-                        user.email == "05054543099" ||
-                        user.email == "5441027908" ||
-                        user.email == "5541027908"
+                    if (user.email == "europexpert38@gmail.com" ||
+                        user.email == "gazitasdemir46@gmail.com"
                     ) {
                         user = user.copy(role = Role.SUPER_ADMIN, canIssueDamga = true)
                     }
@@ -321,7 +296,7 @@ class AuthRepository {
                 }
             }
             Resource.Error("Kullanıcı bulunamadı")
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             Resource.Error("Kullanıcı oturumu yüklenemedi")
         }
     }
@@ -334,13 +309,13 @@ class AuthRepository {
         val user = LocalStore.users[safeUid]
         if (user?.role == Role.SUPER_ADMIN ||
             user?.role == Role.ADMIN ||
-            user?.email == "05054543099" ||
-            user?.email == "5441027908" ||
-            user?.email == "5541027908" ||
+            user?.email == "europexpert38@gmail.com" ||
+            user?.email == "gazitasdemir46@gmail.com" ||
             safeUid.startsWith("admin")
         ) {
             return Resource.Error("Admin kullanıcısının galeri profili yoktur")
         }
+
 
         val localDealer = LocalStore.dealers[safeUid]
         if (localDealer != null) return Resource.Success(localDealer)

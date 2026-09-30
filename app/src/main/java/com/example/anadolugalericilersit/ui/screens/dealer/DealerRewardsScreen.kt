@@ -55,7 +55,7 @@ fun DealerRewardsScreen(
     }
 
     val damgaCount = dealerVehicles.size
-    val targetDamga = 10
+    val targetDamga = 6
     val progress = (damgaCount.toFloat() / targetDamga.toFloat()).coerceIn(0f, 1f)
 
     var currentQrCodeData by remember { mutableStateOf<String?>(null) }
@@ -86,7 +86,7 @@ fun DealerRewardsScreen(
                 FilterChip(
                     selected = selectedTab == 0,
                     onClick = { selectedTab = 0 },
-                    label = { Text("Damgalarım & 10 Damga Ödülü") }
+                    label = { Text("Damgalarım & 6 Damga Ödülü") }
                 )
                 FilterChip(
                     selected = selectedTab == 1,
@@ -114,7 +114,7 @@ fun DealerRewardsScreen(
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
-                                Text(text = "10 Damga Ödül İlerlemesi", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                Text(text = "6 Damga Ödül İlerlemesi", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                                 Text(
                                     text = "$damgaCount / $targetDamga Damgalı Araç",
                                     fontSize = 13.sp,
@@ -142,7 +142,7 @@ fun DealerRewardsScreen(
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                     Text(
-                                        text = "Tebrikler! 10 Damga Hedefini Tamamladınız 🎉",
+                                        text = "Tebrikler! 6 Damga Hedefini Tamamladınız 🎉",
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 15.sp,
                                         color = MaterialTheme.colorScheme.primary,
@@ -176,13 +176,14 @@ fun DealerRewardsScreen(
                             }
                         } else {
                             Text(
-                                text = "10 damga ödülünü kazanmak için 5.000 TL üzeri ekspertizli ve onaylı ${targetDamga - damgaCount} damgalı araç daha eklemelisiniz.",
+                                text = "6 damga ödülünü kazanmak için 5.000 TL üzeri ekspertizli ve onaylı ${targetDamga - damgaCount} damgalı araç daha eklemelisiniz.",
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                         }
                     }
                 }
+
 
                 Spacer(modifier = Modifier.height(20.dp))
 

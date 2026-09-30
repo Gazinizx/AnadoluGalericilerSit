@@ -126,10 +126,11 @@ fun AdminDashboardScreen(
 
             AdminNavigationCard(
                 icon = Icons.Default.Check,
-                title = "Damga ve 10 Damga Ödül Onayları",
+                title = "Damga ve 6 Damga Ödül Onayları",
                 subtitle = "5.000 TL üzeri ekspertiz yaptıran galericilerin damgaları ve ödül onayları",
                 onClick = onNavigateToDamga
             )
+
 
             AdminNavigationCard(
                 icon = Icons.Default.Store,

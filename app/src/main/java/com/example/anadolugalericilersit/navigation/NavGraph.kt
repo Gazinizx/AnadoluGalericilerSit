@@ -61,12 +61,8 @@ fun AnadoluNavGraph(
     val isAdmin = currentUser?.role == Role.ADMIN ||
             currentUser?.role == Role.SUPER_ADMIN ||
             currentUser?.canIssueDamga == true ||
-            currentUser?.email?.contains("yönetim", ignoreCase = true) == true ||
-            currentUser?.email?.contains("yonetim", ignoreCase = true) == true ||
-            currentUser?.email?.contains("admin", ignoreCase = true) == true ||
-            currentUser?.email == "05054543099" ||
-            currentUser?.email == "5441027908" ||
-            currentUser?.email == "5541027908" ||
+            currentUser?.email == "europexpert38@gmail.com" ||
+            currentUser?.email == "gazitasdemir46@gmail.com" ||
             currentUser?.uid?.startsWith("admin") == true
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -107,12 +103,8 @@ fun AnadoluNavGraph(
                         val adminCheck = user?.role == Role.ADMIN ||
                                 user?.role == Role.SUPER_ADMIN ||
                                 user?.canIssueDamga == true ||
-                                user?.email?.contains("yönetim", ignoreCase = true) == true ||
-                                user?.email?.contains("yonetim", ignoreCase = true) == true ||
-                                user?.email?.contains("admin", ignoreCase = true) == true ||
-                                user?.email == "05054543099" ||
-                                user?.email == "5441027908" ||
-                                user?.email == "5541027908" ||
+                                user?.email == "europexpert38@gmail.com" ||
+                                user?.email == "gazitasdemir46@gmail.com" ||
                                 user?.uid?.startsWith("admin") == true
                         if (adminCheck) {
                             navController.navigate(Screen.AdminDashboard.route) {
@@ -132,6 +124,7 @@ fun AnadoluNavGraph(
                     }
                 )
             }
+
 
             composable(Screen.Register.route) {
                 DealerRegisterScreen(

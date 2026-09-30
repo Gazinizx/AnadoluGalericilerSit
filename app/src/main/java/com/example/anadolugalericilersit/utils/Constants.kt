@@ -77,4 +77,29 @@ object Constants {
         "Yokuş Kalkış Desteği",
         "Start & Stop"
     )
+
+    val BODY_PARTS = listOf(
+        "Motor Kaputu",
+        "Tavan",
+        "Bagaj Kapağı",
+        "Sol Ön Çamurluk",
+        "Sağ Ön Çamurluk",
+        "Sol Ön Kapı",
+        "Sağ Ön Kapı",
+        "Sol Arka Kapı",
+        "Sağ Arka Kapı",
+        "Sol Arka Çamurluk",
+        "Sağ Arka Çamurluk",
+        "Ön Tampon",
+        "Arka Tampon"
+    )
+
+    val BODY_PART_CONDITIONS = listOf(
+        "Orijinal",
+        "Lokal Boyalı",
+        "Boyalı",
+        "Değişen",
+        "Vernik / Plastik"
+    )
 }
+

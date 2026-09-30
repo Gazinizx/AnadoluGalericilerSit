@@ -70,14 +70,27 @@ fun AddEditVehicleScreen(
     var negotiable by remember { mutableStateOf(false) }
     var suitableForCredit by remember { mutableStateOf(true) }
     var expertInspectionCost by remember { mutableStateOf("0") }
+    var expertReportStatus by remember { mutableStateOf("Hatasız / Boyasız") }
+    var expertReportDetails by remember { mutableStateOf("") }
     var requestDamga by remember { mutableStateOf(false) }
     var description by remember { mutableStateOf("") }
 
     val selectedFeatures = remember { mutableStateListOf<String>() }
     val newImageUris = remember { mutableStateListOf<Uri>() }
     var selectedVideoUri by remember { mutableStateOf<Uri?>(null) }
+    var selectedReportUri by remember { mutableStateOf<Uri?>(null) }
+    val bodyPartsMap = remember { mutableStateMapOf<String, String>() }
 
     var isBrandExpanded by remember { mutableStateOf(false) }
+    var isExpertStatusExpanded by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        if (bodyPartsMap.isEmpty()) {
+            Constants.BODY_PARTS.forEach { part ->
+                bodyPartsMap[part] = "Orijinal"
+            }
+        }
+    }
 
     LaunchedEffect(vehicleIdToEdit) {
         if (!vehicleIdToEdit.isNullOrBlank()) {
@@ -100,8 +113,15 @@ fun AddEditVehicleScreen(
                 negotiable = v.negotiable
                 suitableForCredit = v.suitableForCredit
                 expertInspectionCost = v.expertInspectionCost.toString()
+                expertReportStatus = v.expertReportStatus.ifBlank { "Hatasız / Boyasız" }
+                expertReportDetails = v.expertReportDetails
+                if (v.bodyPartsCondition.isNotEmpty()) {
+                    bodyPartsMap.clear()
+                    bodyPartsMap.putAll(v.bodyPartsCondition)
+                }
                 requestDamga = v.damgaStatus == DamgaStatus.PENDING || v.damgaStatus == DamgaStatus.APPROVED || v.hasDamga
                 description = v.description
+
                 selectedFeatures.clear()
                 selectedFeatures.addAll(v.features)
             }
@@ -119,6 +139,13 @@ fun AddEditVehicleScreen(
     ) { uri ->
         selectedVideoUri = uri
     }
+
+    val reportPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        selectedReportUri = uri
+    }
+
 
     LaunchedEffect(saveState) {
         if (saveState is Resource.Success) {
@@ -299,7 +326,159 @@ fun AddEditVehicleScreen(
                 Text("Krediye Uygun")
             }
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(text = "Ekspertiz Raporu ve Araç Durumu", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Expert Status Dropdown
+            ExposedDropdownMenuBox(
+                expanded = isExpertStatusExpanded,
+                onExpandedChange = { isExpertStatusExpanded = !isExpertStatusExpanded },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                OutlinedTextField(
+                    value = expertReportStatus,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Ekspertiz Durumu *") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpertStatusExpanded) },
+                    modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true)
+                )
+                ExposedDropdownMenu(
+                    expanded = isExpertStatusExpanded,
+                    onDismissRequest = { isExpertStatusExpanded = false }
+                ) {
+                    val statuses = listOf(
+                        "Hatasız / Boyasız / Değişensiz",
+                        "Lokal Boyalı",
+                        "Boyalı Parçaları Var",
+                        "Değişen Parçalı",
+                        "Ekspertiz Raporu Mevcut",
+                        "Ağır Hasar Kayıtlı"
+                    )
+                    statuses.forEach { s ->
+                        DropdownMenuItem(
+                            text = { Text(s) },
+                            onClick = {
+                                expertReportStatus = s
+                                isExpertStatusExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(10.dp))
+
+            OutlinedTextField(
+                value = expertReportDetails,
+                onValueChange = { expertReportDetails = it },
+                label = { Text("Ekspertiz Detayları ve Notları (Örn: Kaput boyasız, sağ çamurluk boyalı)") },
+                maxLines = 4,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            OutlinedButton(
+                onClick = { reportPickerLauncher.launch("image/*") },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Default.AddAPhoto, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(if (selectedReportUri == null) "Ekspertiz Rapor Belgesi / Fotoğrafı Yükle" else "Ekspertiz Belgesi Seçildi ✓")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Body Parts Condition Selection List
+            Text(text = "Kaporta Parçaları ve Ekspertiz Şeması", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+            Text(
+                text = "Aracın her bir kaporta parçası için durumunu (Orijinal, Lokal, Boyalı, Değişen) işaretleyiniz:",
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Constants.BODY_PARTS.forEach { part ->
+                        val currentCondition = bodyPartsMap[part] ?: "Orijinal"
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = part,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 13.sp,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = currentCondition,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = when (currentCondition) {
+                                        "Orijinal" -> Color(0xFF15803D)
+                                        "Lokal Boyalı" -> Color(0xFFD97706)
+                                        "Boyalı" -> Color(0xFF2563EB)
+                                        "Değişen" -> Color(0xFFDC2626)
+                                        else -> Color.Gray
+                                    }
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                items(Constants.BODY_PART_CONDITIONS) { condition ->
+                                    val isSelected = currentCondition == condition
+                                    val chipBg = when (condition) {
+                                        "Orijinal" -> if (isSelected) Color(0xFF15803D) else MaterialTheme.colorScheme.surface
+                                        "Lokal Boyalı" -> if (isSelected) Color(0xFFD97706) else MaterialTheme.colorScheme.surface
+                                        "Boyalı" -> if (isSelected) Color(0xFF2563EB) else MaterialTheme.colorScheme.surface
+                                        "Değişen" -> if (isSelected) Color(0xFFDC2626) else MaterialTheme.colorScheme.surface
+                                        else -> if (isSelected) Color(0xFF6B7280) else MaterialTheme.colorScheme.surface
+                                    }
+
+                                    FilterChip(
+                                        selected = isSelected,
+                                        onClick = { bodyPartsMap[part] = condition },
+                                        label = {
+                                            Text(
+                                                text = condition,
+                                                fontSize = 11.sp,
+                                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                                color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface
+                                            )
+                                        },
+                                        colors = FilterChipDefaults.filterChipColors(
+                                            selectedContainerColor = chipBg
+                                        )
+                                    )
+                                }
+                            }
+                        }
+
+                        if (part != Constants.BODY_PARTS.last()) {
+                            HorizontalDivider(modifier = Modifier.padding(vertical = 2.dp))
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedTextField(
                 value = expertInspectionCost,
@@ -409,6 +588,9 @@ fun AddEditVehicleScreen(
                         negotiable = negotiable,
                         suitableForCredit = suitableForCredit,
                         expertInspectionCost = expCost,
+                        expertReportStatus = expertReportStatus,
+                        expertReportDetails = expertReportDetails,
+                        bodyPartsCondition = bodyPartsMap.toMap(),
                         damgaStatus = if (expCost >= 5000.0 && requestDamga) DamgaStatus.PENDING else DamgaStatus.NONE,
                         description = description,
                         features = selectedFeatures.toList(),
@@ -419,13 +601,15 @@ fun AddEditVehicleScreen(
                         context = context,
                         vehicle = v,
                         newImageUris = newImageUris,
-                        videoUri = selectedVideoUri
+                        videoUri = selectedVideoUri,
+                        expertReportUri = selectedReportUri
                     )
                 },
                 modifier = Modifier.fillMaxWidth().height(50.dp)
             ) {
                 Text("İlanı Yayınla", fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
+
         }
     }
 }

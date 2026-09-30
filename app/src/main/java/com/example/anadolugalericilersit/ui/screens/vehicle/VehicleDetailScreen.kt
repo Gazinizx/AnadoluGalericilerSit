@@ -409,7 +409,137 @@ fun VehicleDetailScreen(
                                 SpecRow("Renk", vehicle.color)
                             }
 
-                            Spacer(modifier = Modifier.height(20.dp))
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            // Expert Report Card
+                            if (vehicle.expertReportStatus.isNotBlank() || vehicle.expertReportDetails.isNotBlank() || vehicle.expertReportImageUrl.isNotBlank()) {
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 8.dp),
+                                    shape = RoundedCornerShape(12.dp),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                                    )
+                                ) {
+                                    Column(modifier = Modifier.padding(16.dp)) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                text = "📋 Ekspertiz Raporu & Araç Durumu",
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 16.sp,
+                                                color = MaterialTheme.colorScheme.primary
+                                            )
+
+                                            if (vehicle.expertReportStatus.isNotBlank()) {
+                                                Surface(
+                                                    shape = RoundedCornerShape(8.dp),
+                                                    color = MaterialTheme.colorScheme.primary
+                                                ) {
+                                                    Text(
+                                                        text = vehicle.expertReportStatus,
+                                                        fontWeight = FontWeight.Bold,
+                                                        fontSize = 12.sp,
+                                                        color = Color.White,
+                                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                                    )
+                                                }
+                                            }
+                                        }
+
+                                        if (vehicle.expertReportDetails.isNotBlank()) {
+                                            Spacer(modifier = Modifier.height(8.dp))
+                                            Text(
+                                                text = "Detaylar: ${vehicle.expertReportDetails}",
+                                                fontSize = 13.sp,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                        }
+
+                                        if (vehicle.expertInspectionCost > 0) {
+                                            Spacer(modifier = Modifier.height(4.dp))
+                                            Text(
+                                                text = "Ekspertiz Ücreti: ${vehicle.expertInspectionCost.toInt()} ₺",
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = MaterialTheme.colorScheme.secondary
+                                            )
+                                        }
+
+                                        // Kaporta ve Parça Durum Şeması Tablosu
+                                        if (vehicle.bodyPartsCondition.isNotEmpty()) {
+                                            Spacer(modifier = Modifier.height(12.dp))
+                                            Text(
+                                                text = "Kaporta ve Parça Durum Şeması:",
+                                                fontSize = 13.sp,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                            Spacer(modifier = Modifier.height(6.dp))
+
+                                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                                vehicle.bodyPartsCondition.forEach { (part, cond) ->
+                                                    Row(
+                                                        modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                                        verticalAlignment = Alignment.CenterVertically
+                                                    ) {
+                                                        Text(text = part, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
+                                                        Surface(
+                                                            shape = RoundedCornerShape(6.dp),
+                                                            color = when (cond) {
+                                                                "Orijinal" -> Color(0xFF15803D)
+                                                                "Lokal Boyalı" -> Color(0xFFD97706)
+                                                                "Boyalı" -> Color(0xFF2563EB)
+                                                                "Değişen" -> Color(0xFFDC2626)
+                                                                else -> Color.Gray
+                                                            }
+                                                        ) {
+                                                            Text(
+                                                                text = cond,
+                                                                color = Color.White,
+                                                                fontSize = 11.sp,
+                                                                fontWeight = FontWeight.Bold,
+                                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                                            )
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        if (vehicle.expertReportImageUrl.isNotBlank()) {
+
+                                            Spacer(modifier = Modifier.height(12.dp))
+                                            Text(
+                                                text = "Ekspertiz Belgesi / Rapor Fotoğrafı:",
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                            Spacer(modifier = Modifier.height(6.dp))
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .height(180.dp)
+                                                    .clip(RoundedCornerShape(8.dp))
+                                            ) {
+                                                AsyncImage(
+                                                    model = vehicle.expertReportImageUrl,
+                                                    contentDescription = "Ekspertiz Raporu Belgesi",
+                                                    contentScale = ContentScale.Crop,
+                                                    modifier = Modifier.fillMaxSize()
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
 
                             // Equipment Features
                             if (vehicle.features.isNotEmpty()) {

@@ -161,6 +161,7 @@ class VehicleRepository(
         vehicle: Vehicle,
         newImageUris: List<Uri>,
         videoUri: Uri?,
+        expertReportUri: Uri? = null,
         onProgress: (Int, String) -> Unit
     ): Resource<Vehicle> {
         return try {
@@ -218,6 +219,27 @@ class VehicleRepository(
                 }
             }
 
+            var expertReportUrl = vehicle.expertReportImageUrl
+            if (expertReportUri != null) {
+                onProgress(85, "Ekspertiz raporu yükleniyor...")
+                val compressedBytes = ImageCompressor.compressImage(context, expertReportUri)
+                if (compressedBytes.isNotEmpty()) {
+                    val reportRef = storage.reference.child("expert_reports/${vehicleId}_report.jpg")
+                    try {
+                        val taskSnapshot = reportRef.putBytes(compressedBytes).await()
+                        expertReportUrl = try {
+                            reportRef.downloadUrl.await().toString()
+                        } catch (e: Exception) {
+                            expertReportUri.toString()
+                        }
+                    } catch (e: Exception) {
+                        expertReportUrl = expertReportUri.toString()
+                    }
+                } else {
+                    expertReportUrl = expertReportUri.toString()
+                }
+            }
+
             onProgress(90, "İlan veritabanına kaydediliyor...")
             val mainImage = finalImageUrls.firstOrNull() ?: ""
 
@@ -226,6 +248,7 @@ class VehicleRepository(
                 imageUrls = finalImageUrls,
                 mainImageUrl = mainImage,
                 videoUrl = videoUrl,
+                expertReportImageUrl = expertReportUrl,
                 updatedAt = System.currentTimeMillis()
             )
 
@@ -238,6 +261,7 @@ class VehicleRepository(
             Resource.Error(e.localizedMessage ?: "İlan kaydedilirken hata oluştu")
         }
     }
+
 
     suspend fun updateVehicleStatus(vehicleId: String, status: VehicleStatus, rejectionReason: String = ""): Resource<Unit> {
         return try {

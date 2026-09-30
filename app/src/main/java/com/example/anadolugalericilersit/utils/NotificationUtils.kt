@@ -132,27 +132,37 @@ object NotificationUtils {
         val dealerList = LocalStore.notifications.getOrPut(dealerUserId) { mutableListOf() }
         dealerList.add(0, dealerNotification)
 
-        // 3. Save In-App Notification for Admin
-        val adminNotification = NotificationItem(
+        // 3. Save In-App Notification for Admins
+        val admin1Notification = NotificationItem(
             id = UUID.randomUUID().toString(),
-            userId = "admin_mevlut",
+            userId = "admin_europexpert",
+            title = adminTitle,
+            message = adminMessage,
+            type = if (isPayment) "PAYMENT" else "DEBT",
+            createdAt = System.currentTimeMillis()
+        )
+        val admin2Notification = NotificationItem(
+            id = UUID.randomUUID().toString(),
+            userId = "admin_gazitasdemir",
             title = adminTitle,
             message = adminMessage,
             type = if (isPayment) "PAYMENT" else "DEBT",
             createdAt = System.currentTimeMillis()
         )
 
-        val adminList = LocalStore.notifications.getOrPut("admin_mevlut") { mutableListOf() }
-        adminList.add(0, adminNotification)
+        LocalStore.notifications.getOrPut("admin_europexpert") { mutableListOf() }.add(0, admin1Notification)
+        LocalStore.notifications.getOrPut("admin_gazitasdemir") { mutableListOf() }.add(0, admin2Notification)
 
         // Firestore async save
         try {
             val firestore = FirebaseFirestore.getInstance()
             firestore.collection("notifications").document(dealerNotification.id).set(dealerNotification)
-            firestore.collection("notifications").document(adminNotification.id).set(adminNotification)
+            firestore.collection("notifications").document(admin1Notification.id).set(admin1Notification)
+            firestore.collection("notifications").document(admin2Notification.id).set(admin2Notification)
         } catch (_: Exception) {
             // ignore offline
         }
+
     }
 }
 

@@ -17,8 +17,8 @@ import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Settings
+
 import androidx.compose.material.icons.filled.Store
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.*
@@ -200,13 +200,10 @@ fun ProfileScreen(
                 val showAdminButton = user?.role == Role.ADMIN ||
                         user?.role == Role.SUPER_ADMIN ||
                         user?.canIssueDamga == true ||
-                        user?.email?.contains("yönetim", ignoreCase = true) == true ||
-                        user?.email?.contains("yonetim", ignoreCase = true) == true ||
-                        user?.email?.contains("admin", ignoreCase = true) == true ||
-                        user?.email == "05054543099" ||
-                        user?.email == "5441027908" ||
-                        user?.email == "5541027908" ||
+                        user?.email == "europexpert38@gmail.com" ||
+                        user?.email == "gazitasdemir46@gmail.com" ||
                         user?.uid?.startsWith("admin") == true
+
                 if (showAdminButton) {
                     Card(
                         modifier = Modifier
@@ -295,18 +292,13 @@ fun ProfileScreen(
                 )
 
                 ProfileMenuItem(
-                    icon = Icons.Default.Security,
-                    title = "Firebase Güvenlik Kuralları",
-                    onClick = onNavigateToSettings
-                )
-
-                ProfileMenuItem(
                     icon = Icons.Default.Info,
                     title = "KVKK ve Gizlilik Politikası",
                     onClick = {
                         Toast.makeText(context, "KVKK ve Gizlilik Politikası metni günceldir.", Toast.LENGTH_SHORT).show()
                     }
                 )
+
 
                 Spacer(modifier = Modifier.height(16.dp))
 

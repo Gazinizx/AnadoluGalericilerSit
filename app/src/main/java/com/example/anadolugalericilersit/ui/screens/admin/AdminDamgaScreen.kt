@@ -115,8 +115,9 @@ fun AdminDamgaScreen(
                 FilterChip(
                     selected = selectedTab == 2,
                     onClick = { selectedTab = 2 },
-                    label = { Text("10 Damga Ödülü Onayla") }
+                    label = { Text("6 Damga Ödülü Onayla") }
                 )
+
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -336,14 +337,14 @@ fun AdminDamgaScreen(
                     }
                 }
             } else {
-                // Tab 2: 10 Damga Ödülü ve WhatsApp İşlemleri
+                // Tab 2: 6 Damga Ödülü ve WhatsApp İşlemleri
                 Text(
-                    text = "10 Damga Ödül Yönetimi & WhatsApp İletişim",
+                    text = "6 Damga Ödül Yönetimi & WhatsApp İletişim",
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp
                 )
                 Text(
-                    text = "10 damgayı tamamlayan galericilerin IBAN ve galeri bilgileri saat 08:00 - 18:00 (8 ile 6) arasında 05054543099 numaralı WhatsApp hattına iletilmektedir.",
+                    text = "6 damgayı tamamlayan galericilerin IBAN ve galeri bilgileri saat 08:00 - 18:00 arasında 05054543099 numaralı WhatsApp hattına iletilmektedir.",
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -352,7 +353,7 @@ fun AdminDamgaScreen(
 
                 val rewardEligibleDealers = remember(refreshTrigger) {
                     LocalStore.dealers.values.filter { dealer ->
-                        LocalStore.vehicles.values.count { it.dealerId == dealer.id && it.hasDamga } >= 10
+                        LocalStore.vehicles.values.count { it.dealerId == dealer.id && it.hasDamga } >= 6
                     }
                 }
 
@@ -362,12 +363,13 @@ fun AdminDamgaScreen(
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
-                            Text("10 Damga Tamamlayan Galerici Listesi", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text("6 Damga Tamamlayan Galerici Listesi", fontWeight = FontWeight.Bold, fontSize = 14.sp)
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text("Sistem kayıtlarında henüz 10 damgayı tamamlamış galerici bulunmuyor. Galerici 10 damgayı tamamladığında IBAN bilgisi WhatsApp hattına iletilebilir.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text("Sistem kayıtlarında henüz 6 damgayı tamamlamış galerici bulunmuyor. Galerici 6 damgayı tamamladığında IBAN bilgisi WhatsApp hattına iletilebilir.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 } else {
+
                     LazyColumn(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
